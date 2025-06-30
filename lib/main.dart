@@ -1,7 +1,6 @@
-import 'dart:math';
-
 import 'package:battery_plus/battery_plus.dart';
 import 'package:battery_saver/battery_snapshot.dart';
+import 'package:battery_saver/charge_manager.dart';
 import 'package:battery_saver/charge_timer.dart';
 import 'package:battery_saver/storage_manager.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -19,6 +18,43 @@ void callbackDispatcher() {
     final snapshot = await BatterySnapshot.takeSnapshot();
 
     await StorageManager.recordBatterySnapshot(snapshot);
+
+    final rawChargeTime = await StorageManager.getChargeTime();
+    final chargeTime = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+      rawChargeTime.hour,
+      rawChargeTime.minute,
+    );
+
+    final minutesToChargeOnTime = chargeTime
+        .difference(DateTime.now())
+        .inMinutes;
+
+    // Still can charge on time
+    if (minutesToChargeOnTime < 0 && minutesToChargeOnTime >= -35) {
+      return true;
+    }
+
+    final timeBeforeScheduledCharging = await ChargeManager.estimateTime(
+      minutesToChargeOnTime,
+    );
+
+    if (timeBeforeScheduledCharging == null) {
+      return true;
+    }
+
+    // Rounded amount of minutes
+    final minutesBeforeScheduledCharging =
+        timeBeforeScheduledCharging.inMinutes -
+        timeBeforeScheduledCharging.inMinutes % 5;
+
+    if (minutesBeforeScheduledCharging == 0) {
+      // Time to put your phone on charge
+    } else {
+      // Be ready to put your phone on charge in about x minutes
+    }
 
     return true;
   });

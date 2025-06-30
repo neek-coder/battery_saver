@@ -9,7 +9,7 @@ class ChargeManager {
 
   static const k_charge = 1; // Estimate speed of charging
 
-  static Future<Duration?> estimateTime(double minutesToChargeOnTime) async {
+  static Future<Duration?> estimateTime(int minutesToChargeOnTime) async {
     final rawSnapshots = await StorageManager.readBatterySnapshots();
     final snapshots = rawSnapshots.getRange(
       rawSnapshots.length - 3,
