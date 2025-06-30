@@ -1,12 +1,12 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationManager {
-  static Future<void> sendNotificatioin(String title, String message) async {
+  static Future<void> sendNotification(String title, String message) async {
     // Init
     FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
         FlutterLocalNotificationsPlugin();
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
     final InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);

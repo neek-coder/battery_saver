@@ -2,6 +2,7 @@ import 'package:battery_plus/battery_plus.dart';
 import 'package:battery_saver/battery_snapshot.dart';
 import 'package:battery_saver/charge_manager.dart';
 import 'package:battery_saver/charge_timer.dart';
+import 'package:battery_saver/notification_manager.dart';
 import 'package:battery_saver/storage_manager.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
@@ -34,6 +35,10 @@ void callbackDispatcher() {
 
     // Still can charge on time
     if (minutesToChargeOnTime < 0 && minutesToChargeOnTime >= -35) {
+      NotificationManager.sendNotification(
+        'Still time to charge!',
+        'Plug in soon to stay on schedule.',
+      );
       return true;
     }
 
@@ -52,8 +57,16 @@ void callbackDispatcher() {
 
     if (minutesBeforeScheduledCharging == 0) {
       // Time to put your phone on charge
+      NotificationManager.sendNotification(
+        'Time to charge your phone!',
+        'Keep your battery healthy — charge it now.',
+      );
     } else {
       // Be ready to put your phone on charge in about x minutes
+      NotificationManager.sendNotification(
+        'Charging starts in about $minutesBeforeScheduledCharging minutes',
+        'Get ready to plug in soon.',
+      );
     }
 
     return true;
@@ -121,7 +134,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
       setState(() {
         _list = loadedList;
-        print(_list);
       });
     });
   }
@@ -145,16 +157,21 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     return Scaffold(
-      floatingActionButton: TextButton(
-        onPressed: () {
-          Workmanager().registerOneOffTask(
-            "ses",
-            "sus",
-            initialDelay: Duration(seconds: 5),
-          );
-        },
-        child: Text("aiaiai"),
-      ),
+      // floatingActionButton: TextButton(
+      //   onPressed: () {
+      //     Workmanager().registerOneOffTask(
+      //        "ses",
+      //        sus",
+      //        initialDelay: Duration(seconds: 5),
+      //     );
+
+      //     NotificationManager.sendNotification(
+      //       'Time to charge your phone!',
+      //       'Keep your battery healthy — charge it now.',
+      //     );
+      //   },
+      //   child: Text("aiaiai"),
+      // ),
       backgroundColor: CupertinoColors.systemGrey5,
       body: SafeArea(
         child: Padding(
