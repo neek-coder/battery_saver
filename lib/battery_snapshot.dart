@@ -25,6 +25,7 @@ class BatterySnapshot {
     );
   }
 
+  @pragma('vm:entry-point')
   static Future<BatterySnapshot> takeSnapshot() async {
     final battery = Battery();
     final level = await battery.batteryLevel;

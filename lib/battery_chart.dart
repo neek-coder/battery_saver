@@ -52,6 +52,8 @@ class BatteryChart extends StatelessWidget {
                       return BarChart(
                         BarChartData(
                           barGroups: barGroups(barWidth),
+                          minY: 0,
+                          maxY: 100,
                           alignment: BarChartAlignment.spaceBetween,
                           gridData: FlGridData(
                             show: true,

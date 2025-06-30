@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import 'package:battery_plus/battery_plus.dart';
 import 'package:battery_saver/battery_snapshot.dart';
+import 'package:battery_saver/charge_timer.dart';
 import 'package:battery_saver/storage_manager.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,7 +18,7 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     final snapshot = await BatterySnapshot.takeSnapshot();
 
-    await StorageManager.instance.recordBatterySnapshot(snapshot);
+    await StorageManager.recordBatterySnapshot(snapshot);
 
     return true;
   });
@@ -25,12 +27,14 @@ void callbackDispatcher() {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await StorageManager.instance.init();
-
   await Workmanager().initialize(
     callbackDispatcher,
     isInDebugMode: true, // Set to false in production
   );
+
+  // final p = await SharedPreferences.getInstance();
+  // await p.clear();
+  // await Workmanager().cancelAll();
 
   bool isRegistered = await Workmanager().isScheduledByUniqueName(
     "batteryLogger",
@@ -41,14 +45,8 @@ void main() async {
       "batteryLogger", // Unique ID
       batteryTaskName,
       frequency: Duration(minutes: 15), // Minimum allowed
-      initialDelay: Duration(seconds: 10),
-      constraints: Constraints(
-        networkType: NetworkType.not_required,
-        requiresCharging: false,
-      ),
     );
   }
-
   runApp(const MyApp());
 }
 
@@ -68,12 +66,59 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
   @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  List<BatterySnapshot>? _list;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final loadedList = await StorageManager.readBatterySnapshots();
+
+      setState(() {
+        _list = loadedList;
+        print(_list);
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_list != null) {
+      if (_list!.length < 48) {
+        _list = [
+          ...List.generate(
+            48 - _list!.length,
+            (_) => BatterySnapshot(
+              batteryLevel: 0,
+              state: BatteryState.charging,
+              timestamp: DateTime.now(),
+            ),
+          ),
+          ..._list!,
+        ];
+      }
+    }
+
     return Scaffold(
+      floatingActionButton: TextButton(
+        onPressed: () {
+          Workmanager().registerOneOffTask(
+            "ses",
+            "sus",
+            initialDelay: Duration(seconds: 5),
+          );
+        },
+        child: Text("aiaiai"),
+      ),
       backgroundColor: CupertinoColors.systemGrey5,
       body: SafeArea(
         child: Padding(
@@ -102,19 +147,26 @@ class MyHomePage extends StatelessWidget {
                 barGroups: (width) => List.generate(
                   48,
                   (i) => BarChartGroupData(
-                    x: 1,
+                    x: i,
                     barRods: [
                       BarChartRodData(
-                        toY: Random().nextInt(100).toDouble(),
-                        color: Random().nextBool()
-                            ? CupertinoColors.activeGreen
-                            : CupertinoColors.systemYellow,
+                        toY: _list?.elementAt(i).batteryLevel.toDouble() ?? 0,
+                        color:
+                            (_list == null ||
+                                _list?.elementAt(i).state ==
+                                    BatteryState.discharging ||
+                                _list?.elementAt(i).state ==
+                                    BatteryState.unknown)
+                            ? CupertinoColors.systemYellow
+                            : CupertinoColors.activeGreen,
                         width: width,
                       ),
                     ],
                   ),
                 ),
               ),
+              SizedBox(height: 8.0),
+              ChargeTimer(),
             ],
           ),
         ),

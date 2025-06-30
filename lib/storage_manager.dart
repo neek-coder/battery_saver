@@ -6,27 +6,32 @@ import 'battery_snapshot.dart';
 
 class StorageManager {
   // Cosntants
-  static const _storageKey = 'battery_snapshots';
+  static const _chargeTimeStorageKey = 'charge_time';
+  static const _batterySnapshotsStorageKey = 'battery_snapshots';
   static const _snapshots = 48;
 
-  // Singleton
-  static final StorageManager _instance = StorageManager._();
+  static Future<void> setChargeTime(DateTime time) async {
+    final prefs = await SharedPreferences.getInstance();
 
-  static StorageManager get instance => _instance;
-
-  StorageManager._();
-
-  // Internal parameters
-  SharedPreferences? _prefs;
-
-  Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
+    prefs.setString(_chargeTimeStorageKey, time.toIso8601String());
   }
 
-  Future<void> recordBatterySnapshot(BatterySnapshot snapshot) async {
-    if (_prefs == null) return;
+  static Future<DateTime> getChargeTime() async {
+    final prefs = await SharedPreferences.getInstance();
 
-    final List<String> snapshotList = _prefs!.getStringList(_storageKey) ?? [];
+    final rawTime = prefs.getString(_chargeTimeStorageKey);
+
+    return (rawTime == null)
+        ? DateTime(2020, 1, 1, 20)
+        : DateTime.parse(rawTime);
+  }
+
+  @pragma('vm:entry-point')
+  static Future<void> recordBatterySnapshot(BatterySnapshot snapshot) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final List<String> snapshotList =
+        prefs.getStringList(_batterySnapshotsStorageKey) ?? [];
 
     if (snapshotList.length > _snapshots) {
       snapshotList.removeRange(0, snapshotList.length - _snapshots);
@@ -34,13 +39,14 @@ class StorageManager {
 
     snapshotList.add(jsonEncode(snapshot.toJson()));
 
-    await _prefs?.setStringList(_storageKey, snapshotList);
+    await prefs.setStringList(_batterySnapshotsStorageKey, snapshotList);
   }
 
-  List<BatterySnapshot> readBatterySnapshots() {
-    if (_prefs == null) return [];
+  static Future<List<BatterySnapshot>> readBatterySnapshots() async {
+    final prefs = await SharedPreferences.getInstance();
 
-    final List<String> snapshotList = _prefs?.getStringList(_storageKey) ?? [];
+    final List<String> snapshotList =
+        prefs.getStringList(_batterySnapshotsStorageKey) ?? [];
 
     return snapshotList
         .map((jsonStr) => BatterySnapshot.fromJson(jsonDecode(jsonStr)))
