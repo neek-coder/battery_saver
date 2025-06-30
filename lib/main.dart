@@ -78,7 +78,7 @@ void main() async {
 
   await Workmanager().initialize(
     callbackDispatcher,
-    isInDebugMode: true, // Set to false in production
+    // isInDebugMode: true, // Set to false in production
   );
 
   // final p = await SharedPreferences.getInstance();
@@ -159,11 +159,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       // floatingActionButton: TextButton(
       //   onPressed: () {
-      //     Workmanager().registerOneOffTask(
-      //        "ses",
-      //        sus",
-      //        initialDelay: Duration(seconds: 5),
-      //     );
+      //     // Workmanager().registerOneOffTask(
+      //     //    "ses",
+      //     //    sus",
+      //     //    initialDelay: Duration(seconds: 5),
+      //     // );
 
       //     NotificationManager.sendNotification(
       //       'Time to charge your phone!',
