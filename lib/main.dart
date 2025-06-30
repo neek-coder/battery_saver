@@ -106,6 +106,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -166,8 +167,8 @@ class _MyHomePageState extends State<MyHomePage> {
       //     // );
 
       //     NotificationManager.sendNotification(
-      //       'Time to charge your phone!',
-      //       'Keep your battery healthy — charge it now.',
+      //       'Charging starts in about 35 minutes',
+      //       'Get ready to plug in soon.',
       //     );
       //   },
       //   child: Text("aiaiai"),
